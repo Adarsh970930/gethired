@@ -172,6 +172,86 @@ Evaluate the resume and return a strict JSON object (NO markdown, NO extra text)
             };
         }
     }
+
+    /**
+     * CAREER COACH: Common instruction prompt for Resume Profiling
+     */
+    static getCareerCoachPrompt(resumeText) {
+        return `
+You are an expert Executive Tech Recruiter and AI Career Coach.
+Analyze this candidate's resume and determine their exact career profile.
+
+RESUME TEXT:
+"""
+${resumeText}
+"""
+
+Evaluate the resume and return a strict JSON object (NO markdown, NO extra text) with EXACTLY this structure:
+{
+  "currentLevel": "Junior / Mid / Senior",
+  "strongMatches": ["Role 1", "Role 2", "Role 3"], // 3 best exact job titles they fit right now
+  "futureRoles": [
+    { "title": "Next Level Role A", "skillsToLearn": ["Skill A", "Skill B"] },
+    { "title": "Next Level Role B", "skillsToLearn": ["Skill C", "Skill D"] }
+  ],
+  "resumeRating": 85 // Integer 0-100 on the quality of their resume formatting/content
+}`;
+    }
+
+    static async performCareerCoaching(resumeText) {
+        const settings = await Settings.getSettings();
+        const prompt = this.getCareerCoachPrompt(resumeText);
+        
+        try {
+            if (settings.aiProvider === 'gemini' && settings.geminiApiKey) {
+                const genAI = new GoogleGenerativeAI(settings.geminiApiKey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const result = await model.generateContent(prompt);
+                return this.parseJSONSafe(result.response.text());
+            } 
+            else if (settings.aiProvider === 'groq' && settings.groqApiKey) {
+                const response = await axios.post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    {
+                        model: 'llama3-70b-8192',
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.1,
+                        response_format: { type: 'json_object' }
+                    },
+                    { headers: { 'Authorization': `Bearer ${settings.groqApiKey}`, 'Content-Type': 'application/json' } }
+                );
+                return this.parseJSONSafe(response.data.choices[0].message.content);
+            } 
+            else {
+                return this.heuristicCareerCoach(resumeText);
+            }
+        } catch (error) {
+            logger.warn(`Career Coach API failed: ${error.message}. Using heuristic fallback.`);
+            return this.heuristicCareerCoach(resumeText);
+        }
+    }
+
+    static heuristicCareerCoach(resumeText) {
+        const txt = resumeText.toLowerCase();
+        let level = "Junior";
+        if (txt.includes('senior') || txt.includes('lead') || txt.includes('manager')) level = "Senior";
+        else if (txt.includes('5 years') || txt.includes('4 years') || txt.includes('3 years')) level = "Mid";
+        
+        let path = "Software Engineer";
+        if (txt.includes('react') || txt.includes('frontend') || txt.includes('ui')) path = "Frontend Developer";
+        if (txt.includes('node') || txt.includes('backend') || txt.includes('api')) path = "Backend Developer";
+        if (txt.includes('aws') || txt.includes('docker') || txt.includes('kubernetes')) path = "DevOps Engineer";
+        
+        return {
+            currentLevel: level,
+            strongMatches: [path, `${level} ${path}`, "Software Developer"],
+            futureRoles: [
+                { title: "Engineering Manager", skillsToLearn: ["Leadership", "System Architecture"] },
+                { title: "Senior Solutions Architect", "skillsToLearn": ["Cloud Computing", "Scalability Engineering"] }
+            ],
+            resumeRating: 75
+        };
+    }
 }
 
 module.exports = AtsScannerService;

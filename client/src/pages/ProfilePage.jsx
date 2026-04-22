@@ -4,6 +4,7 @@ import { HiOutlineUser, HiOutlineMail, HiOutlineLockClosed, HiOutlineChip, HiOut
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import AiCareerCoach from '../components/AiCareerCoach';
 import SEO from '../components/SEO';
 
 export default function ProfilePage() {
@@ -97,7 +98,12 @@ export default function ProfilePage() {
         <div className="container" style={{ maxWidth: '700px', padding: '40px 20px' }}>
             <SEO title="Profile" description="Manage your Get Hired profile, skills, and account settings." noIndex />
             <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px' }}>👤 Profile</h1>
-            <p className="text-muted" style={{ marginBottom: '32px' }}>Manage your account details</p>
+            <p className="text-muted" style={{ marginBottom: '32px' }}>Manage your account details and explore your career path.</p>
+
+            {/* AI Career Coach Widget */}
+            <div style={{ marginBottom: '24px' }}>
+                <AiCareerCoach />
+            </div>
 
             {/* Profile Info Card */}
             <div className="card" style={{ padding: '28px', marginBottom: '20px' }}>
