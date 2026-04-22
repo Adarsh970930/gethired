@@ -1,0 +1,41 @@
+{
+  "name": "job-aggregator",
+  "version": "1.0.0",
+  "description": "Automatic Job Aggregator Module - Scrapes & aggregates jobs from multiple trusted sources for MERN Job Portal",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "sync": "node scripts/manualSync.js",
+    "seed-sources": "node scripts/seedSources.js",
+    "test": "jest --coverage"
+  },
+  "keywords": [
+    "job-scraper",
+    "job-aggregator",
+    "mern",
+    "job-portal"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "bcryptjs": "^3.0.3",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.1.1",
+    "node-cron": "^3.0.3",
+    "p-limit": "^3.1.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.3"
+  }
+}
