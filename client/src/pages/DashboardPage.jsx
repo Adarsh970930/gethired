@@ -4,6 +4,7 @@ import { HiOutlineBookmark, HiOutlineClipboardList, HiOutlineCheck, HiOutlineClo
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import JobCard from '../components/JobCard';
+import AtsScannerWidget from '../components/AtsScannerWidget';
 import SEO from '../components/SEO';
 
 export default function DashboardPage() {
@@ -91,8 +92,12 @@ export default function DashboardPage() {
                     <div className="spinner" />
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
-                    {/* Recent Bookmarks */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+                    {/* ATS Scanner Widget Top Section */}
+                    <AtsScannerWidget />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
+                        {/* Recent Bookmarks */}
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                             <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>📌 Saved Jobs</h2>
@@ -138,6 +143,7 @@ export default function DashboardPage() {
                                 <p className="text-muted">No tracked applications. <Link to="/jobs">Start applying</Link></p>
                             </div>
                         )}
+                    </div>
                     </div>
                 </div>
             )}
