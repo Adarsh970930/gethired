@@ -227,7 +227,7 @@ export default function AdminJobs() {
                     </div>
                     <div className="flex gap-2">
                         <button className="px-3 py-1 bg-bg-card border border-border rounded hover:border-accent disabled:opacity-50" disabled={jobPage <= 1} onClick={() => setJobPage(p => p - 1)}>
-                            Pref
+                            Prev
                         </button>
                         <button className="px-3 py-1 bg-bg-card border border-border rounded hover:border-accent disabled:opacity-50" disabled={jobPage >= jobPagination.pages} onClick={() => setJobPage(p => p + 1)}>
                             Next
@@ -261,13 +261,32 @@ export default function AdminJobs() {
                                 <div>
                                     <label className="block text-xs font-semibold text-secondary mb-1">Category</label>
                                     <select className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary" value={editingJob.category || ''} onChange={e => setEditingJob({ ...editingJob, category: e.target.value })}>
-                                        <option value="IT">IT</option><option value="Finance">Finance</option><option value="Engineering">Engineering</option><option value="Healthcare">Healthcare</option><option value="Marketing">Marketing</option><option value="Other">Other</option>
+                                        <option value="">Select Category</option>
+                                        <option value="engineering">💻 Engineering</option>
+                                        <option value="design">🎨 Design</option>
+                                        <option value="data-science">📊 Data Science</option>
+                                        <option value="devops">☁️ DevOps</option>
+                                        <option value="marketing">📢 Marketing</option>
+                                        <option value="sales">🤝 Sales</option>
+                                        <option value="finance">💰 Finance</option>
+                                        <option value="hr">👥 HR</option>
+                                        <option value="product">📦 Product</option>
+                                        <option value="customer-support">🎧 Customer Support</option>
+                                        <option value="writing">✍️ Writing</option>
+                                        <option value="operations">⚙️ Operations</option>
+                                        <option value="other">Other</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-secondary mb-1">Experience</label>
                                     <select className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary" value={editingJob.experienceLevel || ''} onChange={e => setEditingJob({ ...editingJob, experienceLevel: e.target.value })}>
-                                        <option value="Entry">Entry</option><option value="Mid">Mid</option><option value="Senior">Senior</option><option value="Executive">Executive</option><option value="Any">Any</option>
+                                        <option value="">Select Level</option>
+                                        <option value="fresher">🌱 Fresher</option>
+                                        <option value="junior">📗 Junior</option>
+                                        <option value="mid">📘 Mid Level</option>
+                                        <option value="senior">📕 Senior</option>
+                                        <option value="lead">⭐ Lead / Principal</option>
+                                        <option value="executive">👔 Executive</option>
                                     </select>
                                 </div>
                                 <div>

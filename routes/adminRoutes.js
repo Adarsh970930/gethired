@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { adminLimiter } = require('../middleware/rateLimiter');
 const { validate } = require('../middleware/validator');
+const { authRequired, adminRequired } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const AnalyticsService = require('../services/AnalyticsService');
 
@@ -10,7 +11,9 @@ const AnalyticsService = require('../services/AnalyticsService');
  * These routes need the aggregator instance, so we export a factory function
  */
 module.exports = function createAdminRoutes(aggregator, scheduler) {
-    // Apply stricter rate limit to admin routes
+    // Apply auth and stricter rate limit to admin routes
+    router.use(authRequired);
+    router.use(adminRequired);
     router.use(adminLimiter);
 
     /**
