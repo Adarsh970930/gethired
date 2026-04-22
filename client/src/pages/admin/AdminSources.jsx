@@ -12,6 +12,7 @@ export default function AdminSources() {
     const [sourcesLoading, setSourcesLoading] = useState(true);
     const [logsLoading, setLogsLoading] = useState(true);
     const [syncLoading, setSyncLoading] = useState(false);
+    const [syncingSource, setSyncingSource] = useState(null);
 
     useEffect(() => {
         loadSources();
@@ -63,12 +64,15 @@ export default function AdminSources() {
     }
 
     async function handleSyncSource(source) {
+        setSyncingSource(source);
         try {
             await axios.post(`/api/admin/jobs/sync/${source}`);
             toast.success(`Sync started for ${source}`);
             loadLogs(1);
         } catch (err) {
             toast.error(`Failed to sync ${source}`);
+        } finally {
+            setSyncingSource(null);
         }
     }
 
@@ -105,6 +109,14 @@ export default function AdminSources() {
                                     <span className="text-secondary font-medium">Last Run</span>
                                     <span className="text-heading font-mono text-xs">{source.lastSyncAt ? new Date(source.lastSyncAt).toLocaleString('en-IN') : 'Never'}</span>
                                 </div>
+                                <div className="flex justify-between text-sm py-2 border-b border-border border-opacity-50">
+                                    <span className="text-secondary font-medium">Successful Syncs</span>
+                                    <span className="text-success font-bold">{source.stats?.successfulSyncs || 0}</span>
+                                </div>
+                                <div className="flex justify-between text-sm py-2 border-b border-border border-opacity-50">
+                                    <span className="text-secondary font-medium">Failed Syncs</span>
+                                    <span className="text-danger font-bold">{source.stats?.failedSyncs || 0}</span>
+                                </div>
                                 <div className="flex justify-between items-center py-2">
                                     <span className="text-secondary text-sm">Jobs Fetched</span>
                                     <span className="text-heading font-bold">{source.totalJobsFetched?.toLocaleString() || 0}</span>
@@ -112,8 +124,11 @@ export default function AdminSources() {
                             </div>
                         </div>
 
-                        <button className="w-full btn btn-ghost justify-center border border-border hover:border-accent hover:bg-accent-light text-accent transition-all py-2" onClick={() => handleSyncSource(source.name)}>
-                            <HiOutlineRefresh size={18} /> Force Sync Now
+                        <button className="w-full btn btn-ghost justify-center border border-border hover:border-accent hover:bg-accent-light text-accent transition-all py-2 flex gap-2 items-center" 
+                            disabled={syncingSource === source.name}
+                            onClick={() => handleSyncSource(source.name)}>
+                            <HiOutlineRefresh className={syncingSource === source.name ? 'animate-spin' : ''} size={18} /> 
+                            {syncingSource === source.name ? 'Syncing...' : 'Force Sync Now'}
                         </button>
                     </div>
                 ))}
@@ -178,7 +193,7 @@ export default function AdminSources() {
                 </div>
 
                 {/* Pagination */}
-                {logsPagination && (
+                {logsPagination?.pages > 1 && (
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-secondary mt-2">
                         <div>
                             Showing log page <span className="text-heading font-medium">{logsPage}</span> of {logsPagination.pages}

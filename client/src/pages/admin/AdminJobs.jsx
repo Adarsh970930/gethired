@@ -167,6 +167,7 @@ export default function AdminJobs() {
                                     <th className="px-4 py-3">Job Details</th>
                                     <th className="px-4 py-3">Company</th>
                                     <th className="px-4 py-3">Source</th>
+                                    <th className="px-4 py-3">Posted</th>
                                     <th className="px-4 py-3">Status</th>
                                     <th className="px-4 py-3 text-right">Actions</th>
                                 </tr>
@@ -192,6 +193,7 @@ export default function AdminJobs() {
                                         </td>
                                         <td className="px-4 py-3 font-medium">{job.company?.name || 'Unknown'}</td>
                                         <td className="px-4 py-3 text-xs text-muted">{job.source?.name}</td>
+                                        <td className="px-4 py-3 text-xs text-muted">{job.postedDate ? new Date(job.postedDate).toLocaleDateString('en-IN') : 'N/A'}</td>
                                         <td className="px-4 py-3">
                                             {job.isActive ?
                                                 <span className="px-2 py-1 rounded-full text-xs font-bold bg-success-light text-success">Active</span> :

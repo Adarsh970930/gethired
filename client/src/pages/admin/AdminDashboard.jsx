@@ -9,6 +9,7 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState(null);
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [lastUpdated, setLastUpdated] = useState(new Date());
 
     useEffect(() => {
         loadData();
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
             ]);
             setStats(statsRes.data.data);
             setAnalytics(analyticsRes.data.data);
+            setLastUpdated(new Date());
         } catch (err) {
             toast.error('Failed to load dashboard data');
         } finally {
@@ -49,11 +51,16 @@ export default function AdminDashboard() {
             <div className="admin-page-header flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-heading">System Overview</h1>
-                    <p className="text-sm text-secondary">Real-time statistics of the platform</p>
+                    <p className="text-sm text-secondary">Real-time statistics of the platform · Last updated: {lastUpdated.toLocaleTimeString('en-IN')}</p>
                 </div>
-                <button className="btn btn-primary" onClick={cleanupExpired}>
-                    🧹 Cleanup Expired
-                </button>
+                <div className="flex gap-2">
+                    <button className="btn btn-secondary border border-border" onClick={loadData}>
+                        🔄 Refresh
+                    </button>
+                    <button className="btn btn-primary" onClick={cleanupExpired}>
+                        🧹 Cleanup Expired
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -85,8 +92,8 @@ export default function AdminDashboard() {
                                 <PieChart>
                                     <Pie
                                         data={analytics.jobDistribution.source}
-                                        cx="50%" cy="50%" labelLine={false}
-                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        cx="50%" cy="50%" labelLine={false} minAngle={10}
+                                        label={({ name, percent }) => percent > 0.05 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
                                         outerRadius={100} fill="#8884d8" dataKey="value"
                                     >
                                         {analytics.jobDistribution.source.map((entry, index) => (
@@ -110,7 +117,7 @@ export default function AdminDashboard() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={analytics.dailyGrowth}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                                    <XAxis dataKey="date" stroke="var(--text-secondary)" style={{ fontSize: '0.75rem' }} tickFormatter={(str) => new Date(str).getDate()} />
+                                    <XAxis dataKey="date" stroke="var(--text-secondary)" style={{ fontSize: '0.75rem' }} tickFormatter={(str) => { const d = new Date(str); return `${d.getDate()}/${d.getMonth()+1}`; }} />
                                     <YAxis stroke="var(--text-secondary)" style={{ fontSize: '0.75rem' }} />
                                     <RechartsTooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }} />
                                     <Area type="monotone" dataKey="jobs" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.2} strokeWidth={2} />
