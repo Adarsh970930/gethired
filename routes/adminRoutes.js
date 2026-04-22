@@ -5,6 +5,10 @@ const { validate } = require('../middleware/validator');
 const { authRequired, adminRequired } = require('../middleware/auth');
 const logger = require('../utils/logger');
 const AnalyticsService = require('../services/AnalyticsService');
+const Job = require('../models/Job');
+const User = require('../models/User');
+const Source = require('../models/Source');
+const SyncLog = require('../models/SyncLog');
 
 /**
  * Admin routes for job sync management
@@ -105,7 +109,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.get('/sources', async (req, res, next) => {
         try {
-            const Source = require('../models/Source');
             const sources = await Source.find().lean();
             res.json({
                 success: true,
@@ -165,7 +168,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.get('/users', async (req, res, next) => {
         try {
-            const User = require('../models/User');
             const users = await User.find()
                 .select('-password')
                 .sort({ createdAt: -1 })
@@ -182,7 +184,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.put('/users/:id/role', async (req, res, next) => {
         try {
-            const User = require('../models/User');
             const user = await User.findById(req.params.id);
             if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
@@ -201,7 +202,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.put('/users/:id/deactivate', async (req, res, next) => {
         try {
-            const User = require('../models/User');
             const user = await User.findById(req.params.id);
             if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
@@ -224,7 +224,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.get('/jobs', async (req, res, next) => {
         try {
-            const Job = require('../models/Job');
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 20;
             const skip = (page - 1) * limit;
@@ -259,7 +258,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.put('/jobs/:id/toggle', async (req, res, next) => {
         try {
-            const Job = require('../models/Job');
             const job = await Job.findById(req.params.id);
             if (!job) return res.status(404).json({ success: false, error: 'Job not found' });
 
@@ -278,7 +276,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.delete('/jobs/:id', async (req, res, next) => {
         try {
-            const Job = require('../models/Job');
             const job = await Job.findByIdAndDelete(req.params.id);
             if (!job) return res.status(404).json({ success: false, error: 'Job not found' });
 
@@ -294,7 +291,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.put('/jobs/:id', async (req, res, next) => {
         try {
-            const Job = require('../models/Job');
             const updates = req.body;
             // Prevent changing important internal fields directly
             delete updates._id;
@@ -321,7 +317,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
                 return res.status(400).json({ success: false, error: 'No jobs selected' });
             }
 
-            const Job = require('../models/Job');
             let result;
 
             switch (action) {
@@ -348,9 +343,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.get('/stats', async (req, res, next) => {
         try {
-            const Job = require('../models/Job');
-            const User = require('../models/User');
-            const SyncLog = require('../models/SyncLog');
 
             const [totalJobs, activeJobs, totalUsers, recentSyncs] = await Promise.all([
                 Job.countDocuments(),
@@ -396,7 +388,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.post('/jobs', async (req, res, next) => {
         try {
-            const Job = require('../models/Job');
             const jobData = { ...req.body };
 
             // Set source explicitly for manually added jobs
@@ -427,7 +418,6 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
      */
     router.get('/logs', async (req, res, next) => {
         try {
-            const SyncLog = require('../models/SyncLog');
             const page = parseInt(req.query.page, 10) || 1;
             const limit = parseInt(req.query.limit, 10) || 20;
             const skip = (page - 1) * limit;
