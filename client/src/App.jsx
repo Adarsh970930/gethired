@@ -19,6 +19,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminJobs from './pages/admin/AdminJobs';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminSources from './pages/admin/AdminSources';
+import AdminSettings from './pages/admin/AdminSettings';
 
 import './index.css';
 
@@ -58,6 +59,7 @@ function App() {
                         <Route path="jobs" element={<AdminJobs />} />
                         <Route path="users" element={<AdminUsers />} />
                         <Route path="sources" element={<AdminSources />} />
+                        <Route path="settings" element={<AdminSettings />} />
                     </Route>
                 </Routes>
 

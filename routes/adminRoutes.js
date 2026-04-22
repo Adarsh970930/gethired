@@ -9,6 +9,7 @@ const Job = require('../models/Job');
 const User = require('../models/User');
 const Source = require('../models/Source');
 const SyncLog = require('../models/SyncLog');
+const Settings = require('../models/Settings');
 
 /**
  * Admin routes for job sync management
@@ -114,6 +115,24 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
                 success: true,
                 data: sources,
             });
+        } catch (error) {
+            next(error);
+        }
+    });
+
+    /**
+     * PUT /api/admin/sources/:id/toggle
+     * Toggle a source's active status
+     */
+    router.put('/sources/:id/toggle', async (req, res, next) => {
+        try {
+            const source = await Source.findById(req.params.id);
+            if (!source) return res.status(404).json({ success: false, error: 'Source not found' });
+
+            source.isActive = !source.isActive;
+            await source.save();
+
+            res.json({ success: true, data: source, message: `Source ${source.name} ${source.isActive ? 'enabled' : 'disabled'}` });
         } catch (error) {
             next(error);
         }
@@ -439,6 +458,48 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
                     pages: Math.ceil(total / limit)
                 }
             });
+        } catch (error) {
+            next(error);
+        }
+    });
+
+    /**
+     * GET /api/admin/settings
+     * Get platform dynamic settings
+     */
+    router.get('/settings', async (req, res, next) => {
+        try {
+            const settings = await Settings.getSettings();
+            res.json({ success: true, data: settings });
+        } catch (error) {
+            next(error);
+        }
+    });
+
+    /**
+     * PUT /api/admin/settings
+     * Update platform dynamic settings
+     */
+    router.put('/settings', async (req, res, next) => {
+        try {
+            const updates = req.body;
+            delete updates._id;
+            delete updates.isSingleton;
+
+            const settings = await Settings.findOne({ isSingleton: true });
+            
+            // Check if interval changed
+            const oldInterval = settings.syncIntervalHours;
+            
+            Object.assign(settings, updates);
+            await settings.save();
+
+            // Notify scheduler if it exists and interval changed
+            if (scheduler && scheduler.updateSyncInterval && settings.syncIntervalHours !== oldInterval) {
+                scheduler.updateSyncInterval(settings.syncIntervalHours);
+            }
+
+            res.json({ success: true, data: settings, message: 'Settings updated successfully' });
         } catch (error) {
             next(error);
         }

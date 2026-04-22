@@ -76,6 +76,16 @@ export default function AdminSources() {
         }
     }
 
+    async function handleToggleSource(sourceId) {
+        try {
+            const res = await axios.put(`/api/admin/sources/${sourceId}/toggle`);
+            setSources(sources.map(s => s._id === sourceId ? { ...s, isActive: res.data.data.isActive } : s));
+            toast.success(res.data.message);
+        } catch (err) {
+            toast.error('Failed to toggle source');
+        }
+    }
+
     return (
         <div className="admin-page animate-fade-in flex flex-col gap-8">
             {/* Header section */}
@@ -99,9 +109,10 @@ export default function AdminSources() {
                         <div>
                             <div className="flex justify-between items-start mb-6">
                                 <h3 className="font-bold text-xl text-heading tracking-wide">{source.displayName || source.name}</h3>
-                                <span className={`px-2 py-1 rounded-full text-[0.65rem] uppercase font-black tracking-widest ${source.isActive ? 'bg-success-light text-success' : 'bg-danger-light text-danger'}`}>
+                                <button onClick={() => handleToggleSource(source._id)} className={`px-3 py-1.5 border hover:opacity-80 transition-opacity rounded-full flex items-center gap-1.5 text-xs uppercase font-black tracking-widest ${source.isActive ? 'bg-success-light text-success border-success/30' : 'bg-danger-light text-danger border-danger/30'}`}>
+                                    <div className={`w-2 h-2 rounded-full ${source.isActive ? 'bg-success' : 'bg-danger'}`}></div>
                                     {source.isActive ? 'Active' : 'Disabled'}
-                                </span>
+                                </button>
                             </div>
 
                             <div className="space-y-3 mb-6">

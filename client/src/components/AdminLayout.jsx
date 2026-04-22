@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { HiOutlineHome, HiOutlineBriefcase, HiOutlineUsers, HiOutlineLink, HiOutlineLogout, HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
+import { HiOutlineHome, HiOutlineBriefcase, HiOutlineUsers, HiOutlineLink, HiOutlineLogout, HiOutlineMenu, HiOutlineX, HiOutlineCog } from 'react-icons/hi';
 import SEO from './SEO';
 import ThemeToggle from './ThemeToggle';
 
@@ -53,6 +53,9 @@ export default function AdminLayout() {
                     </NavLink>
                     <NavLink to="/admin/sources" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}>
                         <HiOutlineLink className="nav-icon" /> <span>Scraper Sources</span>
+                    </NavLink>
+                    <NavLink to="/admin/settings" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}>
+                        <HiOutlineCog className="nav-icon" /> <span>Settings</span>
                     </NavLink>
                 </div>
                 <div className="admin-sidebar-footer">

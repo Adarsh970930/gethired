@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { HiOutlineBriefcase, HiOutlineBookmark, HiOutlineViewGrid, HiOutlineLogin, HiOutlineMenu, HiOutlineX, HiOutlineLogout, HiOutlineUser, HiOutlineClipboardList } from 'react-icons/hi';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
@@ -8,6 +9,7 @@ export default function Navbar() {
     const { user, isAuthenticated, logout } = useAuth();
     const [showDropdown, setShowDropdown] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [banner, setBanner] = useState('');
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
@@ -18,6 +20,14 @@ export default function Navbar() {
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
+
+        // Fetch announcement banner
+        axios.get('/api/admin/settings').then(res => {
+            if (res.data?.data?.announcementBanner) {
+                setBanner(res.data.data.announcementBanner);
+            }
+        }).catch(() => {});
+
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
@@ -28,6 +38,12 @@ export default function Navbar() {
     }
 
     return (
+        <>
+        {banner && (
+            <div className="bg-accent text-white text-center text-xs py-2 px-4 font-semibold tracking-wide shadow-md z-50 relative">
+                {banner}
+            </div>
+        )}
         <nav className="navbar">
             <div className="container">
                 <Link to="/" className="navbar-brand">
@@ -118,5 +134,6 @@ export default function Navbar() {
                 </div>
             </div>
         </nav>
+        </>
     );
 }

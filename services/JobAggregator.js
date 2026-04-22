@@ -6,6 +6,7 @@ const Source = require('../models/Source');
 const SyncLog = require('../models/SyncLog');
 const logger = require('../utils/logger');
 const config = require('../config');
+const Settings = require('../models/Settings');
 const { SYNC_STATUS } = require('../utils/constants');
 
 /**
@@ -97,6 +98,8 @@ class JobAggregator {
         logger.info(`📥 Syncing ${sourceName}...`);
 
         try {
+            const settings = await Settings.getSettings();
+
             // Fetch jobs with different queries for diversity
             let allJobs = [];
 
@@ -105,8 +108,10 @@ class JobAggregator {
 
             for (const query of queries) {
                 try {
+                    // Compute roughly max pages. Assume average 50 jobs per page.
+                    const maxAllowedPages = Math.ceil(settings.maxJobsPerSource / 50);
                     const jobs = await scraper.fetchJobs(query, {
-                        maxPages: Math.min(config.scraper.maxPagesPerSource, 3),
+                        maxPages: Math.min(maxAllowedPages, 5),
                     });
                     allJobs.push(...jobs);
                 } catch (error) {
@@ -285,9 +290,9 @@ class JobAggregator {
     }
 
     /**
-     * Clean up expired and inactive jobs
+     * Clean up expired or extremely old un-engaged jobs
      */
-    async cleanupExpiredJobs() {
+    async cleanupExpiredJobs(cleanupDays = 60) {
         try {
             const now = new Date();
 
@@ -300,19 +305,19 @@ class JobAggregator {
                 { $set: { isActive: false } }
             );
 
-            // Deactivate jobs older than 60 days with no expiry
-            const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+            // Deactivate jobs older than N days with no expiry
+            const limitTime = new Date(now.getTime() - cleanupDays * 24 * 60 * 60 * 1000);
             const oldResult = await Job.updateMany(
                 {
                     isActive: true,
                     expiryDate: null,
-                    postedDate: { $lt: sixtyDaysAgo },
+                    postedDate: { $lt: limitTime },
                 },
                 { $set: { isActive: false } }
             );
 
             const total = (expiredResult.modifiedCount || 0) + (oldResult.modifiedCount || 0);
-            logger.info(`🧹 Cleanup: deactivated ${total} jobs (${expiredResult.modifiedCount} expired, ${oldResult.modifiedCount} old)`);
+            logger.info(`🧹 Cleanup: deactivated ${total} jobs (${expiredResult.modifiedCount} expired, ${oldResult.modifiedCount} old [> ${cleanupDays} days])`);
 
             return { deactivated: total };
         } catch (error) {
