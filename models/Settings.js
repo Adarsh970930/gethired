@@ -40,6 +40,20 @@ const settingsSchema = new mongoose.Schema({
     announcementBanner: {
         type: String,
         default: ''
+    },
+    // AI & ATS Engine Settings
+    aiProvider: {
+        type: String,
+        enum: ['gemini', 'groq', 'heuristic'],
+        default: 'heuristic'
+    },
+    geminiApiKey: {
+        type: String,
+        default: ''
+    },
+    groqApiKey: {
+        type: String,
+        default: ''
     }
 }, { timestamps: true });
 

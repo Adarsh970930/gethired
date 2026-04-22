@@ -7,6 +7,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const authRoutes = require('./routes/authRoutes');
 const bookmarkRoutes = require('./routes/bookmarkRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
+const atsRoutes = require('./routes/atsRoutes');
 const createAdminRoutes = require('./routes/adminRoutes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const JobAggregator = require('./services/JobAggregator');
@@ -58,6 +59,7 @@ function createApp() {
     app.use('/api/jobs', jobRoutes);
     app.use('/api/bookmarks', bookmarkRoutes);
     app.use('/api/applications', applicationRoutes);
+    app.use('/api/resume', atsRoutes);
     app.use('/api/admin', createAdminRoutes(aggregator, scheduler));
 
     // Serve React static build

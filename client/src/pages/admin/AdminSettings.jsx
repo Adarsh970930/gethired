@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { HiOutlineSave, HiOutlineClock, HiOutlineDatabase, HiOutlineTrash } from 'react-icons/hi';
+import { HiOutlineSave, HiOutlineClock, HiOutlineDatabase, HiOutlineTrash, HiOutlineSparkles } from 'react-icons/hi';
 
 export default function AdminSettings() {
     const [settings, setSettings] = useState({
@@ -12,6 +12,9 @@ export default function AdminSettings() {
         rateLimitWindowMs: 900000,
         rateLimitMax: 100,
         announcementBanner: '',
+        aiProvider: 'gemini',
+        geminiApiKey: '',
+        groqApiKey: '',
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -67,6 +70,62 @@ export default function AdminSettings() {
             </div>
 
             <form onSubmit={handleSave} className="space-y-8 max-w-4xl">
+
+                {/* AI & ATS Engine Settings */}
+                <div className="admin-card p-6 border-l-4 border-l-accent">
+                    <div className="flex items-center gap-3 mb-6 border-b border-border pb-4">
+                        <HiOutlineSparkles className="text-accent" size={24} />
+                        <h2 className="text-xl font-bold text-heading">AI & ATS Engine Configurations</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-semibold text-secondary mb-2">Active AI Provider</label>
+                            <p className="text-xs text-muted mb-4">Select the engine used to evaluate resumes and assign scores across the platform.</p>
+                            
+                            <div className="flex gap-4">
+                                <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${settings.aiProvider === 'gemini' ? 'border-accent bg-accent/10' : 'border-border bg-bg-secondary hover:border-accent/40'}`}>
+                                    <input type="radio" name="aiProvider" value="gemini" checked={settings.aiProvider === 'gemini'} onChange={handleChange} className="hidden" />
+                                    <span className="text-2xl">⚡</span>
+                                    <span className={`font-bold ${settings.aiProvider === 'gemini' ? 'text-accent' : 'text-primary'}`}>Gemini AI</span>
+                                </label>
+                                <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${settings.aiProvider === 'groq' ? 'border-[#f55036] bg-[#f55036]/10' : 'border-border bg-bg-secondary hover:border-[#f55036]/40'}`}>
+                                    <input type="radio" name="aiProvider" value="groq" checked={settings.aiProvider === 'groq'} onChange={handleChange} className="hidden" />
+                                    <span className="text-2xl">🧠</span>
+                                    <span className={`font-bold ${settings.aiProvider === 'groq' ? 'text-[#f55036]' : 'text-primary'}`}>Meta LLaMA-3 (Groq)</span>
+                                </label>
+                                <label className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all cursor-pointer ${settings.aiProvider === 'heuristic' ? 'border-success bg-success/10' : 'border-border bg-bg-secondary hover:border-success/40'}`}>
+                                    <input type="radio" name="aiProvider" value="heuristic" checked={settings.aiProvider === 'heuristic'} onChange={handleChange} className="hidden" />
+                                    <span className="text-2xl">⚙️</span>
+                                    <span className={`font-bold ${settings.aiProvider === 'heuristic' ? 'text-success' : 'text-primary'}`}>Local Mode (Basic)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                            <div className={settings.aiProvider === 'gemini' ? 'opacity-100' : 'opacity-40 grayscale transition-all'}>
+                                <label className="block text-sm font-semibold text-secondary mb-2">Google Gemini API Key</label>
+                                <input 
+                                    type="password" name="geminiApiKey" 
+                                    placeholder="AIzaSy..."
+                                    value={settings.geminiApiKey} onChange={handleChange}
+                                    className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
+                                />
+                                <p className="text-[0.65rem] text-muted mt-1 uppercase tracking-wider">Required for Gemini 1.5 Flash</p>
+                            </div>
+                            <div className={settings.aiProvider === 'groq' ? 'opacity-100' : 'opacity-40 grayscale transition-all'}>
+                                <label className="block text-sm font-semibold text-secondary mb-2">Groq LLaMA-3 API Key</label>
+                                <input 
+                                    type="password" name="groqApiKey" 
+                                    placeholder="gsk_..."
+                                    value={settings.groqApiKey} onChange={handleChange}
+                                    className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-[#f55036]" 
+                                />
+                                <p className="text-[0.65rem] text-muted mt-1 uppercase tracking-wider">Required for Ultra-fast Inferencing</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 {/* Aggregator Settings */}
                 <div className="admin-card p-6">
