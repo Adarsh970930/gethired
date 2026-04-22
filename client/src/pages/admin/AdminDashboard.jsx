@@ -15,8 +15,8 @@ export default function AdminDashboard() {
         loadData();
     }, []);
 
-    async function loadData() {
-        setLoading(true);
+    async function loadData(isRefresh = false) {
+        if (!stats) setLoading(true); // Only show full loader on initial load
         try {
             const [statsRes, analyticsRes] = await Promise.all([
                 axios.get('/api/admin/stats'),
@@ -32,18 +32,38 @@ export default function AdminDashboard() {
         }
     }
 
-    async function cleanupExpired() {
-        if (!confirm('Clean up all expired or inactive jobs?')) return;
+    function cleanupExpired() {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div className="font-semibold text-heading">Confirm Data Cleanup</div>
+                <div className="text-sm text-secondary">Are you sure you want to clean up all expired or inactive jobs? This cannot be undone.</div>
+                <div className="flex justify-end gap-2 mt-2">
+                    <button className="px-3 py-1.5 text-xs font-semibold rounded bg-bg-secondary border border-border hover:opacity-80 transition-colors" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                    <button className="px-3 py-1.5 text-xs font-semibold rounded bg-primary text-white border border-primary hover:opacity-80 transition-colors" onClick={() => {
+                        toast.dismiss(t.id);
+                        executeCleanup();
+                    }}>
+                        Confirm Cleanup
+                    </button>
+                </div>
+            </div>
+        ), { duration: Infinity, id: 'cleanup-confirm' });
+    }
+
+    async function executeCleanup() {
+        const loadingToast = toast.loading('Cleaning up jobs...');
         try {
             const res = await axios.delete('/api/admin/jobs/expired');
-            toast.success(res.data.message);
-            loadData();
+            toast.success(res.data.message, { id: loadingToast });
+            loadData(true);
         } catch (err) {
-            toast.error('Cleanup failed');
+            toast.error('Cleanup failed', { id: loadingToast });
         }
     }
 
-    if (loading) return <div className="p-8 text-center text-muted">Loading dashboard...</div>;
+    if (loading && !stats) return <div className="p-8 text-center text-muted">Loading dashboard...</div>;
     if (!stats || !analytics) return null;
 
     return (
@@ -54,10 +74,10 @@ export default function AdminDashboard() {
                     <p className="text-sm text-secondary">Real-time statistics of the platform · Last updated: {lastUpdated.toLocaleTimeString('en-IN')}</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="btn btn-secondary border border-border" onClick={loadData}>
+                    <button className="btn btn-secondary border border-border" onClick={() => loadData(true)} disabled={loading}>
                         🔄 Refresh
                     </button>
-                    <button className="btn btn-primary" onClick={cleanupExpired}>
+                    <button className="btn btn-primary" onClick={cleanupExpired} disabled={loading}>
                         🧹 Cleanup Expired
                     </button>
                 </div>

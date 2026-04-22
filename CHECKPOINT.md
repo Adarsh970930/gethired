@@ -200,7 +200,7 @@ Built full MongoDB singleton `models/Settings.js`, custom API routes, backend in
 
 ### 🟡 PRIORITY 4 — POLISH (If time allows)
 
-#### FIX 15: Replace native `confirm()` with toast-based inline confirmations
+#### ✅ FIX 15: Replace native `confirm()` with toast-based inline confirmations
 All admin pages use `confirm()` — replace with inline "Are you sure?" mini-UI or at minimum keep confirm() but acknowledge it in code comments.
 
 #### ✅ FIX 16: Fix Pie chart label overlap

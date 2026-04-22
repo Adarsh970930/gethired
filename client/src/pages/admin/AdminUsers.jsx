@@ -31,31 +31,73 @@ export default function AdminUsers() {
         }
     }
 
-    async function toggleUserRole(userId) {
-        if (currentUser && currentUser._id === userId) {
+    function toggleUserRole(userObj) {
+        if (currentUser && currentUser._id === userObj._id) {
             return toast.error("You cannot change your own role");
         }
-        if (!confirm('Change user role?')) return;
+        
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div className="font-semibold text-heading">Change User Role</div>
+                <div className="text-sm text-secondary">Make {userObj.name} a {userObj.role === 'admin' ? 'Regular User' : 'System Admin'}?</div>
+                <div className="flex justify-end gap-2 mt-2">
+                    <button className="px-3 py-1.5 text-xs font-semibold rounded bg-bg-secondary border border-border hover:opacity-80 transition-colors" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                    <button className="px-3 py-1.5 text-xs font-semibold rounded bg-accent text-white border border-accent hover:opacity-80 transition-colors" onClick={() => {
+                        toast.dismiss(t.id);
+                        executeToggleRole(userObj._id);
+                    }}>
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        ), { duration: Infinity, id: 'role-confirm' });
+    }
+
+    async function executeToggleRole(userId) {
+        const loadingToast = toast.loading('Updating role...');
         try {
             const res = await axios.put(`/api/admin/users/${userId}/role`);
-            toast.success(res.data.message);
+            toast.success(res.data.message, { id: loadingToast });
             setUsers(users.map(u => u._id === userId ? { ...u, role: u.role === 'admin' ? 'user' : 'admin' } : u));
         } catch (err) {
-            toast.error('Failed to update user role');
+            toast.error('Failed to update user role', { id: loadingToast });
         }
     }
 
-    async function toggleUserActive(userId) {
-        if (currentUser && currentUser._id === userId) {
+    function toggleUserActive(userObj) {
+        if (currentUser && currentUser._id === userObj._id) {
             return toast.error("You cannot ban yourself");
         }
-        if (!confirm('Are you sure you want to ban/unban this user?')) return;
+        
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+                <div className="font-semibold text-heading">{userObj.isActive ? 'Ban' : 'Unban'} User</div>
+                <div className="text-sm text-secondary">Are you sure you want to {userObj.isActive ? 'ban' : 'unban'} {userObj.name}?</div>
+                <div className="flex justify-end gap-2 mt-2">
+                    <button className="px-3 py-1.5 text-xs font-semibold rounded bg-bg-secondary border border-border hover:opacity-80 transition-colors" onClick={() => toast.dismiss(t.id)}>
+                        Cancel
+                    </button>
+                    <button className={`px-3 py-1.5 text-xs font-semibold rounded text-white border hover:opacity-80 transition-colors ${userObj.isActive ? 'bg-danger border-danger' : 'bg-success border-success'}`} onClick={() => {
+                        toast.dismiss(t.id);
+                        executeToggleActive(userObj._id);
+                    }}>
+                        Confirm {userObj.isActive ? 'Ban' : 'Unban'}
+                    </button>
+                </div>
+            </div>
+        ), { duration: Infinity, id: 'ban-confirm' });
+    }
+
+    async function executeToggleActive(userId) {
+        const loadingToast = toast.loading('Updating status...');
         try {
             const res = await axios.put(`/api/admin/users/${userId}/deactivate`);
-            toast.success(res.data.message);
+            toast.success(res.data.message, { id: loadingToast });
             setUsers(users.map(u => u._id === userId ? { ...u, isActive: !u.isActive } : u));
         } catch (err) {
-            toast.error('Failed to update user status');
+            toast.error('Failed to update user status', { id: loadingToast });
         }
     }
 
@@ -121,10 +163,10 @@ export default function AdminUsers() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button className={`p-2 rounded transition-colors ${currentUser?._id === u._id ? 'opacity-30 cursor-not-allowed text-muted' : 'hover:bg-info-light text-info'}`} title="Toggle Admin Role" onClick={() => toggleUserRole(u._id)} disabled={currentUser?._id === u._id}>
+                                                <button className={`p-2 rounded transition-colors ${currentUser?._id === u._id ? 'opacity-30 cursor-not-allowed text-muted' : 'hover:bg-info-light text-info'}`} title="Toggle Admin Role" onClick={() => toggleUserRole(u)} disabled={currentUser?._id === u._id}>
                                                     <HiOutlineShieldCheck size={18} />
                                                 </button>
-                                                <button className={`p-2 rounded transition-colors ${currentUser?._id === u._id ? 'opacity-30 cursor-not-allowed text-muted' : (u.isActive ? 'hover:bg-warning-light text-warning' : 'hover:bg-success-light text-success')}`} title={u.isActive ? 'Ban User' : 'Unban User'} onClick={() => toggleUserActive(u._id)} disabled={currentUser?._id === u._id}>
+                                                <button className={`p-2 rounded transition-colors ${currentUser?._id === u._id ? 'opacity-30 cursor-not-allowed text-muted' : (u.isActive ? 'hover:bg-warning-light text-warning' : 'hover:bg-success-light text-success')}`} title={u.isActive ? 'Ban User' : 'Unban User'} onClick={() => toggleUserActive(u)} disabled={currentUser?._id === u._id}>
                                                     <HiOutlineBan size={18} />
                                                 </button>
                                             </div>
