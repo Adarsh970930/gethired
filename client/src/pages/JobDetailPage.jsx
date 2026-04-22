@@ -10,7 +10,7 @@ import SEO from '../components/SEO';
 export default function JobDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isBookmarked, setIsBookmarked] = useState(false);
@@ -120,19 +120,21 @@ export default function JobDetailPage() {
                         </div>
 
                         {/* Actions */}
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                            {job.applyUrl && (
-                                <a href={job.applyUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg" style={{ flex: 1 }}>
-                                    <HiOutlineExternalLink /> Apply Now
-                                </a>
-                            )}
-                            <button className="btn btn-secondary" onClick={toggleBookmark}>
-                                {isBookmarked ? <><HiBookmark style={{ color: 'var(--warning)' }} /> Saved</> : <><HiOutlineBookmark /> Save</>}
-                            </button>
-                            <button className="btn btn-secondary" onClick={trackApplication}>
-                                Track
-                            </button>
-                        </div>
+                        {user?.role !== 'admin' && (
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                                {job.applyUrl && (
+                                    <a href={job.applyUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg" style={{ flex: 1 }}>
+                                        <HiOutlineExternalLink /> Apply Now
+                                    </a>
+                                )}
+                                <button className="btn btn-secondary" onClick={toggleBookmark}>
+                                    {isBookmarked ? <><HiBookmark style={{ color: 'var(--warning)' }} /> Saved</> : <><HiOutlineBookmark /> Save</>}
+                                </button>
+                                <button className="btn btn-secondary" onClick={trackApplication}>
+                                    Track
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Description */}

@@ -40,13 +40,15 @@ export default function Navbar() {
                 </button>
 
                 <div className={`navbar-links ${mobileOpen ? 'open' : ''}`}>
-                    <NavLink to="/jobs" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                        onClick={() => setMobileOpen(false)}>
-                        <HiOutlineBriefcase className="nav-icon" />
-                        <span>Jobs</span>
-                    </NavLink>
+                    {user?.role !== 'admin' && (
+                        <NavLink to="/jobs" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                            onClick={() => setMobileOpen(false)}>
+                            <HiOutlineBriefcase className="nav-icon" />
+                            <span>Jobs</span>
+                        </NavLink>
+                    )}
 
-                    {isAuthenticated && (
+                    {isAuthenticated && user?.role !== 'admin' && (
                         <>
                             <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                                 onClick={() => setMobileOpen(false)}>
@@ -75,15 +77,19 @@ export default function Navbar() {
                             </button>
                             {showDropdown && (
                                 <div className="nav-dropdown">
-                                    <Link to="/dashboard" className="nav-dropdown-item" onClick={() => setShowDropdown(false)}>
-                                        <HiOutlineViewGrid /> Dashboard
-                                    </Link>
-                                    <Link to="/saved" className="nav-dropdown-item" onClick={() => setShowDropdown(false)}>
-                                        <HiOutlineBookmark /> Saved Jobs
-                                    </Link>
-                                    <Link to="/applications" className="nav-dropdown-item" onClick={() => setShowDropdown(false)}>
-                                        <HiOutlineClipboardList /> Applications
-                                    </Link>
+                                    {user?.role !== 'admin' && (
+                                        <>
+                                            <Link to="/dashboard" className="nav-dropdown-item" onClick={() => setShowDropdown(false)}>
+                                                <HiOutlineViewGrid /> Dashboard
+                                            </Link>
+                                            <Link to="/saved" className="nav-dropdown-item" onClick={() => setShowDropdown(false)}>
+                                                <HiOutlineBookmark /> Saved Jobs
+                                            </Link>
+                                            <Link to="/applications" className="nav-dropdown-item" onClick={() => setShowDropdown(false)}>
+                                                <HiOutlineClipboardList /> Applications
+                                            </Link>
+                                        </>
+                                    )}
                                     {user?.role === 'admin' && (
                                         <Link to="/admin" className="nav-dropdown-item" onClick={() => setShowDropdown(false)}>
                                             <HiOutlineViewGrid /> Admin Panel

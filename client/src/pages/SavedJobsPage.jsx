@@ -7,7 +7,7 @@ import JobCard from '../components/JobCard';
 import SEO from '../components/SEO';
 
 export default function SavedJobsPage() {
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [bookmarks, setBookmarks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,8 +16,9 @@ export default function SavedJobsPage() {
 
     useEffect(() => {
         if (!isAuthenticated) { navigate('/login'); return; }
+        if (user?.role === 'admin') { navigate('/admin'); return; }
         fetchBookmarks();
-    }, [isAuthenticated, page]);
+    }, [isAuthenticated, user, navigate, page]);
 
     async function fetchBookmarks() {
         setLoading(true);
@@ -39,7 +40,7 @@ export default function SavedJobsPage() {
         } catch (err) { toast.error('Failed to remove'); }
     }
 
-    if (!isAuthenticated) return null;
+    if (!isAuthenticated || user?.role === 'admin') return null;
 
     return (
         <div className="container" style={{ paddingTop: '32px', paddingBottom: '60px' }}>

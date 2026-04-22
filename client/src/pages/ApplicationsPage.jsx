@@ -13,7 +13,7 @@ const statusColors = {
 };
 
 export default function ApplicationsPage() {
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [applications, setApplications] = useState([]);
     const [stats, setStats] = useState({});
@@ -22,8 +22,9 @@ export default function ApplicationsPage() {
 
     useEffect(() => {
         if (!isAuthenticated) { navigate('/login'); return; }
+        if (user?.role === 'admin') { navigate('/admin'); return; }
         fetchApplications();
-    }, [isAuthenticated, filter]);
+    }, [isAuthenticated, user, navigate, filter]);
 
     async function fetchApplications() {
         setLoading(true);
@@ -53,7 +54,7 @@ export default function ApplicationsPage() {
         } catch (err) { toast.error('Failed to remove'); }
     }
 
-    if (!isAuthenticated) return null;
+    if (!isAuthenticated || user?.role === 'admin') return null;
     const totalApps = Object.values(stats).reduce((s, n) => s + n, 0);
 
     return (

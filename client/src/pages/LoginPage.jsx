@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HiOutlineMail, HiOutlineLockClosed } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -9,19 +9,23 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login, isAuthenticated } = useAuth();
+    const { login, isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
 
-    if (isAuthenticated) { navigate('/dashboard', { replace: true }); return null; }
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate(user?.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+        }
+    }, [isAuthenticated, user, navigate]);
 
     async function handleSubmit(e) {
         e.preventDefault();
         if (!email || !password) { toast.error('Please fill in all fields'); return; }
         setLoading(true);
         try {
-            await login(email, password);
+            const userData = await login(email, password);
             toast.success('Welcome back!');
-            navigate('/dashboard');
+            navigate(userData?.role === 'admin' ? '/admin' : '/dashboard');
         } catch (err) {
             toast.error(err.response?.data?.error || 'Login failed');
         } finally { setLoading(false); }

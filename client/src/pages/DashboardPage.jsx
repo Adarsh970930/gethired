@@ -16,8 +16,9 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (!isAuthenticated) { navigate('/login'); return; }
+        if (user?.role === 'admin') { navigate('/admin'); return; }
         fetchDashboard();
-    }, [isAuthenticated]);
+    }, [isAuthenticated, user, navigate]);
 
     async function fetchDashboard() {
         setLoading(true);
@@ -34,7 +35,7 @@ export default function DashboardPage() {
         } finally { setLoading(false); }
     }
 
-    if (!isAuthenticated) return null;
+    if (!isAuthenticated || user?.role === 'admin') return null;
 
     const totalApps = Object.values(appStats).reduce((s, n) => s + n, 0);
     const statusIcons = {
