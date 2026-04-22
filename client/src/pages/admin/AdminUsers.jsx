@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { HiOutlineShieldCheck, HiOutlineBan } from 'react-icons/hi';
+import { HiOutlineShieldCheck, HiOutlineBan, HiOutlineSearch } from 'react-icons/hi';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminUsers() {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+
+    const filteredUsers = users.filter(u =>
+        u.name?.toLowerCase().includes(search.toLowerCase()) ||
+        u.email?.toLowerCase().includes(search.toLowerCase())
+    );
 
     useEffect(() => {
         loadUsers();
@@ -43,6 +49,7 @@ export default function AdminUsers() {
         if (currentUser && currentUser._id === userId) {
             return toast.error("You cannot ban yourself");
         }
+        if (!confirm('Are you sure you want to ban/unban this user?')) return;
         try {
             const res = await axios.put(`/api/admin/users/${userId}/deactivate`);
             toast.success(res.data.message);
@@ -58,6 +65,16 @@ export default function AdminUsers() {
                 <div>
                     <h1 className="text-2xl font-bold text-heading">Platform Users</h1>
                     <p className="text-sm text-secondary">Manage {users.length} registered accounts and their privileges.</p>
+                </div>
+                <div className="relative">
+                    <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" />
+                    <input
+                        type="text"
+                        className="bg-bg-input border border-border rounded-md py-2 px-10 text-sm focus:border-accent outline-none text-primary w-64"
+                        placeholder="Search users by name or email..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
             </div>
 
@@ -77,7 +94,7 @@ export default function AdminUsers() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map(u => (
+                                {filteredUsers.map(u => (
                                     <tr key={u._id} className="border-b border-border hover:bg-bg-card-hover transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">

@@ -250,6 +250,14 @@ export default function AdminJobs() {
                                     <label className="block text-sm text-secondary mb-1">Job Title</label>
                                     <input className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary" value={editingJob.title || ''} onChange={e => setEditingJob({ ...editingJob, title: e.target.value })} required />
                                 </div>
+                                <div className="col-span-1 md:col-span-2">
+                                    <label className="block text-sm text-secondary mb-1">Description</label>
+                                    <textarea className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary"
+                                        rows={5} style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                                        value={editingJob.description || ''}
+                                        onChange={e => setEditingJob({ ...editingJob, description: e.target.value })}
+                                        placeholder="Job description..." />
+                                </div>
                                 <div>
                                     <label className="block text-sm text-secondary mb-1">Company</label>
                                     <input className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary" value={editingJob.company?.name || ''} onChange={e => setEditingJob({ ...editingJob, company: { ...editingJob.company, name: e.target.value } })} required />
@@ -257,6 +265,18 @@ export default function AdminJobs() {
                                 <div>
                                     <label className="block text-sm text-secondary mb-1">Apply URL</label>
                                     <input className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary" value={editingJob.applyUrl || ''} onChange={e => setEditingJob({ ...editingJob, applyUrl: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-secondary mb-1">Job Type</label>
+                                    <select className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary"
+                                        value={editingJob.jobType || ''} 
+                                        onChange={e => setEditingJob({ ...editingJob, jobType: e.target.value })}>
+                                        <option value="full-time">💼 Full Time</option>
+                                        <option value="internship">🎓 Internship</option>
+                                        <option value="part-time">⏰ Part Time</option>
+                                        <option value="contract">📝 Contract</option>
+                                        <option value="freelance">💻 Freelance</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-secondary mb-1">Category</label>
