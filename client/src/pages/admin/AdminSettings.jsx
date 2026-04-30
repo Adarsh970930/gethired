@@ -229,61 +229,68 @@ export default function AdminSettings() {
                     </div>
                 </div>
 
-                {/* Automated Email Acknowledgements */}
+                {/* SMTP Server Configuration */}
                 <div className="admin-card p-6">
                     <div className="flex items-center gap-3 mb-6 border-b border-border pb-4">
                         <HiOutlineMail className="text-accent" size={24} />
-                        <h2 className="text-xl font-bold text-heading">Automated Email Communications</h2>
+                        <h2 className="text-xl font-bold text-heading">SMTP / Email Server Setup</h2>
+                    </div>
+                    <p className="text-sm text-secondary mb-6">Configure your Gmail credentials to enable automated emails. <span className="text-accent font-semibold">An App Password is required!</span></p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-semibold text-secondary mb-2">Sender Email (Gmail)</label>
+                            <input 
+                                type="email" name="smtpEmail" 
+                                placeholder="admin@gethired.com"
+                                value={settings.smtpEmail || ''} onChange={handleChange}
+                                className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-secondary mb-2">App Password</label>
+                            <div className="relative flex items-center">
+                                <input 
+                                    type={showPass.smtp ? "text" : "password"} name="smtpPassword" 
+                                    placeholder="abcd efgh ijkl mnop"
+                                    value={settings.smtpPassword || ''} onChange={handleChange}
+                                    readOnly={!editMode.smtp}
+                                    className={`form-input w-full rounded-lg p-3 pr-20 text-primary transition-all border ${editMode.smtp ? 'bg-bg-input border-accent focus:ring-1 focus:ring-accent' : 'bg-bg-secondary border-border opacity-70 cursor-not-allowed focus:outline-none'}`}
+                                />
+                                <div className="absolute right-3 flex items-center gap-2">
+                                    <button type="button" onClick={() => toggleShow('smtp')} className="text-secondary hover:text-primary transition-colors">
+                                        {showPass.smtp ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
+                                    </button>
+                                    <button type="button" onClick={() => toggleEdit('smtp')} className={`transition-colors ${editMode.smtp ? 'text-accent' : 'text-secondary hover:text-primary'}`}>
+                                        <HiOutlinePencil size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                            <p className="text-[0.65rem] text-muted mt-1">Go to Google Account &gt; Security &gt; 2-Step Verification &gt; App Passwords to generate this 16-letter code.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Automated Email Acknowledgements */}
+                <div className="admin-card p-6">
+                    <div className="flex items-center gap-3 mb-6 border-b border-border pb-4">
+                        <span className="text-2xl">📨</span>
+                        <h2 className="text-xl font-bold text-heading">Application Acknowledgement Emails</h2>
                     </div>
 
                     <div className="space-y-6">
                         <div className="flex items-center justify-between bg-bg-secondary p-4 rounded-lg border border-border">
                             <div>
-                                <h3 className="font-bold text-heading text-sm">Application Acknowledgement Emails</h3>
+                                <h3 className="font-bold text-heading text-sm">Enable Acknowledgements</h3>
                                 <p className="text-xs text-muted mt-1">Automatically send an email to users when they apply for a job.</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="emailEnabled" checked={settings.emailEnabled} onChange={handleChange} className="sr-only peer" />
+                                <input type="checkbox" name="emailEnabled" checked={settings.emailEnabled || false} onChange={handleChange} className="sr-only peer" />
                                 <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success"></div>
                             </label>
                         </div>
                         
                         <div className={settings.emailEnabled ? 'space-y-6 opacity-100 transition-opacity' : 'space-y-6 opacity-40 pointer-events-none transition-opacity'}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-secondary mb-2">SMTP / Sender Email (Gmail)</label>
-                                    <input 
-                                        type="email" name="smtpEmail" 
-                                        placeholder="admin@gethired.com"
-                                        required={settings.emailEnabled}
-                                        value={settings.smtpEmail} onChange={handleChange}
-                                        className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-semibold text-secondary mb-2">App Password (Not regular password)</label>
-                                    <div className="relative flex items-center">
-                                        <input 
-                                            type={showPass.smtp ? "text" : "password"} name="smtpPassword" 
-                                            placeholder="abcd efgh ijkl mnop"
-                                            required={settings.emailEnabled && editMode.smtp}
-                                            value={settings.smtpPassword || ''} onChange={handleChange}
-                                            readOnly={!editMode.smtp}
-                                            className={`form-input w-full rounded-lg p-3 pr-20 text-primary transition-all border ${editMode.smtp ? 'bg-bg-input border-accent focus:ring-1 focus:ring-accent' : 'bg-bg-secondary border-border opacity-70 cursor-not-allowed focus:outline-none'}`}
-                                        />
-                                        <div className="absolute right-3 flex items-center gap-2">
-                                            <button type="button" onClick={() => toggleShow('smtp')} className="text-secondary hover:text-primary transition-colors">
-                                                {showPass.smtp ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
-                                            </button>
-                                            <button type="button" onClick={() => toggleEdit('smtp')} className={`transition-colors ${editMode.smtp ? 'text-accent' : 'text-secondary hover:text-primary'}`}>
-                                                <HiOutlinePencil size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <p className="text-[0.65rem] text-muted mt-1">Generate an "App Password" from your Google Account settings.</p>
-                                </div>
-                            </div>
-                            
                             <div>
                                 <label className="block text-sm font-semibold text-secondary mb-2">Email Subject line</label>
                                 <input 
