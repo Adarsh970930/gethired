@@ -20,6 +20,9 @@ export default function AdminSettings() {
         smtpPassword: '',
         emailSubject: '',
         emailTemplate: '',
+        massEmailEnabled: false,
+        massEmailSubject: '',
+        massEmailTemplate: '',
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -299,6 +302,52 @@ export default function AdminSettings() {
                                     name="emailTemplate" rows="6"
                                     required={settings.emailEnabled}
                                     value={settings.emailTemplate} onChange={handleChange}
+                                    placeholder="<p>Hi {{userName}}...</p>"
+                                    className="form-input w-full font-mono text-sm bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mass Email Alerts (College Jobs) */}
+                <div className="admin-card p-6">
+                    <div className="flex items-center gap-3 mb-6 border-b border-border pb-4">
+                        <span className="text-2xl">🎓</span>
+                        <h2 className="text-xl font-bold text-heading">Mass Student Alerts (College Jobs)</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between bg-bg-secondary p-4 rounded-lg border border-border">
+                            <div>
+                                <h3 className="font-bold text-heading text-sm">College-Exclusive Job Blast</h3>
+                                <p className="text-xs text-muted mt-1">Automatically notify all active students when a College-Exclusive job is posted.</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="massEmailEnabled" checked={settings.massEmailEnabled || false} onChange={handleChange} className="sr-only peer" />
+                                <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success"></div>
+                            </label>
+                        </div>
+                        
+                        <div className={settings.massEmailEnabled ? 'space-y-6 opacity-100 transition-opacity' : 'space-y-6 opacity-40 pointer-events-none transition-opacity'}>
+                            <div>
+                                <label className="block text-sm font-semibold text-secondary mb-2">Blast Email Subject</label>
+                                <input 
+                                    type="text" name="massEmailSubject" 
+                                    placeholder="🎓 New College Job Alert: {{jobTitle}}"
+                                    required={settings.massEmailEnabled}
+                                    value={settings.massEmailSubject || ''} onChange={handleChange}
+                                    className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-secondary mb-2">Blast HTML Template</label>
+                                <p className="text-xs text-muted mb-2">Use tags: <code className="bg-bg-secondary px-1 rounded">{"{{userName}}"}</code>, <code className="bg-bg-secondary px-1 rounded">{"{{jobTitle}}"}</code>, <code className="bg-bg-secondary px-1 rounded">{"{{companyName}}"}</code></p>
+                                <textarea 
+                                    name="massEmailTemplate" rows="6"
+                                    required={settings.massEmailEnabled}
+                                    value={settings.massEmailTemplate || ''} onChange={handleChange}
                                     placeholder="<p>Hi {{userName}}...</p>"
                                     className="form-input w-full font-mono text-sm bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
                                 ></textarea>

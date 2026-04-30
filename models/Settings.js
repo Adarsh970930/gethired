@@ -75,6 +75,19 @@ const settingsSchema = new mongoose.Schema({
     emailTemplate: {
         type: String,
         default: '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaep; border-radius: 10px;"><h2>Application Received! 🎉</h2><p>Hi <b>{{userName}}</b>,</p><p>We have successfully received your application for the role of <b>{{jobTitle}}</b> at <b>{{companyName}}</b>.</p><p>The company will review your profile and get back to you shortly.</p><br><p>Best of luck,<br><b>Get Hired Team</b></p></div>'
+    },
+    // Mass Email Alerts (College Jobs)
+    massEmailEnabled: {
+        type: Boolean,
+        default: false
+    },
+    massEmailSubject: {
+        type: String,
+        default: '🎓 New College Job Alert: {{jobTitle}}'
+    },
+    massEmailTemplate: {
+        type: String,
+        default: '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaep; border-radius: 10px;"><h2>Exclusive College Job Alert! 🎓</h2><p>Hi <b>{{userName}}</b>,</p><p>A new exclusive job has just been posted for our students:</p><h3>{{jobTitle}} at {{companyName}}</h3><p>Hurry up and apply from your dashboard!</p><br><p>Best,<br><b>Placement Cell</b></p></div>'
     }
 }, { timestamps: true });
 

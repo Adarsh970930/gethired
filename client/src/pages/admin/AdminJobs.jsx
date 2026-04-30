@@ -11,15 +11,16 @@ export default function AdminJobs() {
     const [selectedJobs, setSelectedJobs] = useState([]);
     const [editingJob, setEditingJob] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('scraped');
 
     useEffect(() => {
-        loadJobs(jobPage, jobSearch);
-    }, [jobPage]);
+        loadJobs(jobPage, jobSearch, activeTab);
+    }, [jobPage, activeTab]);
 
-    async function loadJobs(page = 1, q = '') {
+    async function loadJobs(page = 1, q = '', type = activeTab) {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/admin/jobs?page=${page}&limit=20&q=${encodeURIComponent(q)}`);
+            const res = await axios.get(`/api/admin/jobs?page=${page}&limit=20&q=${encodeURIComponent(q)}&type=${type}`);
             setJobs(res.data.data || []);
             setJobPagination(res.data.pagination || {});
             setSelectedJobs([]); // Reset selection on page change
@@ -89,7 +90,13 @@ export default function AdminJobs() {
                 // Create new job
                 const res = await axios.post('/api/admin/jobs', editingJob);
                 toast.success(res.data.message);
-                setJobs([res.data.data, ...jobs]);
+                if (res.data.data.isCollegeExclusive && activeTab !== 'college') {
+                    setActiveTab('college');
+                } else if (!res.data.data.isCollegeExclusive && activeTab !== 'scraped') {
+                    setActiveTab('scraped');
+                } else {
+                    setJobs([res.data.data, ...jobs]);
+                }
             }
             setEditingJob(null);
         } catch (err) {
@@ -99,26 +106,41 @@ export default function AdminJobs() {
 
     return (
         <div className="admin-page animate-fade-in">
-            <div className="admin-page-header flex justify-between items-end mb-6">
+            <div className="admin-page-header flex flex-col xl:flex-row justify-between items-start xl:items-end mb-6 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-heading">Job Content Manager</h1>
-                    <p className="text-sm text-secondary">View, edit, or remove scraped jobs</p>
+                    <p className="text-sm text-secondary">View, edit, or remove jobs</p>
+
+                    <div className="flex bg-bg-secondary p-1 rounded-lg border border-border mt-4 w-fit">
+                        <button
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'scraped' ? 'bg-accent text-white' : 'text-secondary hover:text-primary'}`}
+                            onClick={() => { setActiveTab('scraped'); setJobPage(1); }}
+                        >
+                            Scraped Jobs
+                        </button>
+                        <button
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'college' ? 'bg-accent text-white' : 'text-secondary hover:text-primary'}`}
+                            onClick={() => { setActiveTab('college'); setJobPage(1); }}
+                        >
+                            🎓 College Exclusive
+                        </button>
+                    </div>
                 </div>
 
-                <div className="flex gap-2">
-                    <div className="relative">
+                <div className="flex gap-2 w-full xl:w-auto">
+                    <div className="relative flex-grow xl:flex-grow-0">
                         <HiOutlineSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" />
                         <input
                             type="text"
-                            className="bg-bg-input border border-border rounded-md py-2 px-10 text-sm focus:border-accent outline-none text-primary w-64"
+                            className="bg-bg-input border border-border rounded-md py-2 px-10 text-sm focus:border-accent outline-none text-primary w-full xl:w-64"
                             placeholder="Search jobs..."
                             value={jobSearch}
                             onChange={(e) => setJobSearch(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') { setJobPage(1); loadJobs(1, jobSearch); } }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { setJobPage(1); loadJobs(1, jobSearch, activeTab); } }}
                         />
                     </div>
-                    <button className="btn btn-ghost py-2 px-4 border border-border" onClick={() => { setJobPage(1); loadJobs(1, jobSearch); }}>Search</button>
-                    <button className="btn btn-primary py-2 px-4 flex items-center gap-2" onClick={() => setEditingJob({})}>
+                    <button className="btn btn-ghost py-2 px-4 border border-border" onClick={() => { setJobPage(1); loadJobs(1, jobSearch, activeTab); }}>Search</button>
+                    <button className="btn btn-primary py-2 px-4 flex items-center gap-2 whitespace-nowrap" onClick={() => setEditingJob({ isCollegeExclusive: activeTab === 'college' })}>
                         <HiOutlinePlus /> Add Job
                     </button>
                 </div>
@@ -315,9 +337,23 @@ export default function AdminJobs() {
                                     <label className="block text-xs font-semibold text-secondary mb-1">City</label>
                                     <input className="form-input w-full bg-bg-input border border-border rounded p-2 text-primary" value={editingJob.location?.city || ''} onChange={e => setEditingJob({ ...editingJob, location: { ...editingJob.location, city: e.target.value } })} />
                                 </div>
-                                <div className="flex items-center gap-2 mt-4 md:mt-6">
-                                    <input type="checkbox" id="isRemote" className="w-4 h-4 accent-accent" checked={editingJob.location?.remote || false} onChange={e => setEditingJob({ ...editingJob, location: { ...editingJob.location, remote: e.target.checked } })} />
-                                    <label htmlFor="isRemote" className="text-sm font-medium text-heading cursor-pointer">Remote Job</label>
+                                <div className="flex flex-col gap-3 mt-4 md:mt-6 col-span-1 md:col-span-2 bg-bg-secondary p-4 rounded-lg border border-border">
+                                    <h3 className="text-sm font-semibold text-secondary mb-1">Job Flags</h3>
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2">
+                                            <input type="checkbox" id="isRemote" className="w-4 h-4 accent-accent" checked={editingJob.location?.remote || false} onChange={e => setEditingJob({ ...editingJob, location: { ...editingJob.location, remote: e.target.checked } })} />
+                                            <label htmlFor="isRemote" className="text-sm font-medium text-heading cursor-pointer">Remote Job</label>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input type="checkbox" id="isCollegeExclusive" className="w-4 h-4 accent-accent" checked={editingJob.isCollegeExclusive || false} onChange={e => setEditingJob({ ...editingJob, isCollegeExclusive: e.target.checked })} />
+                                            <label htmlFor="isCollegeExclusive" className="text-sm font-medium text-heading cursor-pointer flex items-center gap-1">
+                                                🎓 Mark as College-Exclusive Job
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {editingJob.isCollegeExclusive && !editingJob._id && (
+                                        <p className="text-xs text-accent mt-2">✨ Mass email alert will be sent to all active students when you save this job.</p>
+                                    )}
                                 </div>
                             </div>
 

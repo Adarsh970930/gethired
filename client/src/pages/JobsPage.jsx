@@ -24,6 +24,7 @@ export default function JobsPage() {
         workMode: searchParams.get('workMode') || '',
         sort: searchParams.get('sort') || 'newest',
         isInternational: searchParams.get('isInternational') === 'true',
+        isCollegeExclusive: searchParams.get('isCollegeExclusive') === 'true',
     }));
 
     const limit = 15;
@@ -36,7 +37,7 @@ export default function JobsPage() {
     useEffect(() => {
         setPage(1);
         fetchJobs();
-    }, [filters.q, filters.jobType, filters.experienceLevel, filters.category, filters.workMode, filters.sort, filters.isInternational]);
+    }, [filters.q, filters.jobType, filters.experienceLevel, filters.category, filters.workMode, filters.sort, filters.isInternational, filters.isCollegeExclusive]);
 
     async function fetchJobs() {
         setLoading(true);
@@ -47,6 +48,7 @@ export default function JobsPage() {
             if (filters.experienceLevel) params.experienceLevel = filters.experienceLevel;
             if (filters.category) params.category = filters.category;
             if (filters.isInternational) params.isInternational = 'true';
+            if (filters.isCollegeExclusive) params.isCollegeExclusive = 'true';
 
             const endpoint = filters.q ? '/api/jobs/search' : '/api/jobs';
             const res = await axios.get(endpoint, { params });
@@ -136,6 +138,15 @@ export default function JobsPage() {
                         />
                         🌏 International
                     </label>
+                    <label className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', background: filters.isCollegeExclusive ? 'var(--accent)' : 'transparent', color: filters.isCollegeExclusive ? '#fff' : 'inherit', border: filters.isCollegeExclusive ? '1px solid var(--accent)' : '1px solid var(--border)' }}>
+                        <input
+                            type="checkbox"
+                            checked={filters.isCollegeExclusive}
+                            onChange={(e) => setFilter('isCollegeExclusive', e.target.checked)}
+                            style={{ display: 'none' }}
+                        />
+                        🎓 College Exclusive
+                    </label>
                 </div>
 
                 <select className="form-select" value={filters.jobType} onChange={(e) => setFilter('jobType', e.target.value)}>
@@ -187,7 +198,7 @@ export default function JobsPage() {
                     <strong style={{ color: 'var(--text-primary)' }}>{total.toLocaleString()}</strong> jobs
                 </div>
                 {Object.values(filters).some(v => v && v !== 'newest') && (
-                    <button className="btn btn-ghost btn-sm" onClick={() => setFilters({ q: '', jobType: '', experienceLevel: '', category: '', workMode: '', sort: 'newest' })}>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setFilters({ q: '', jobType: '', experienceLevel: '', category: '', workMode: '', sort: 'newest', isInternational: false, isCollegeExclusive: false })}>
                         ✕ Clear Filters
                     </button>
                 )}

@@ -51,6 +51,7 @@ const jobSchema = new mongoose.Schema(
             hybrid: { type: Boolean, default: false },
         },
         isInternational: { type: Boolean, default: false, index: true },
+        isCollegeExclusive: { type: Boolean, default: false, index: true },
 
         // Salary
         salary: {
@@ -211,6 +212,14 @@ jobSchema.statics.findWithFilters = async function (filters = {}, options = {}) 
         // Default: Show India/Remote (non-international)
         // If user wants EVERYTHING, they can pass 'all' but for now let's stick to toggle behavior
         query.isInternational = { $ne: true };
+    }
+
+    // College Exclusive Toggle
+    if (filters.isCollegeExclusive === true || filters.isCollegeExclusive === 'true') {
+        query.isCollegeExclusive = true;
+    } else {
+        // Default: Hide college-exclusive jobs from the regular job feed
+        query.isCollegeExclusive = { $ne: true };
     }
 
     // Salary range

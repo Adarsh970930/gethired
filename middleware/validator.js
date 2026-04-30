@@ -23,6 +23,7 @@ const schemas = {
         company: Joi.string().max(100).allow(''),
         sort: Joi.string().valid('newest', 'oldest', 'salary_high', 'salary_low', 'relevant', 'company'),
         isInternational: Joi.alternatives().try(Joi.string().valid('true', 'false'), Joi.boolean()),
+        isCollegeExclusive: Joi.alternatives().try(Joi.string().valid('true', 'false'), Joi.boolean()),
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).max(100).default(20),
     }),

@@ -10,6 +10,7 @@ const User = require('../models/User');
 const Source = require('../models/Source');
 const SyncLog = require('../models/SyncLog');
 const Settings = require('../models/Settings');
+const EmailService = require('../services/emailService');
 
 /**
  * Admin routes for job sync management
@@ -247,6 +248,7 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
             const limit = parseInt(req.query.limit) || 20;
             const skip = (page - 1) * limit;
             const q = req.query.q || '';
+            const type = req.query.type || 'scraped';
 
             const filter = {};
             if (q) {
@@ -254,6 +256,12 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
                     { title: { $regex: q, $options: 'i' } },
                     { 'company.name': { $regex: q, $options: 'i' } },
                 ];
+            }
+
+            if (type === 'college') {
+                filter.isCollegeExclusive = true;
+            } else if (type === 'scraped') {
+                filter.isCollegeExclusive = { $ne: true };
             }
 
             const [jobs, total] = await Promise.all([
@@ -424,6 +432,11 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
 
             const job = new Job(jobData);
             await job.save();
+
+            // Trigger Mass Email if it's a College-Exclusive job
+            if (job.isCollegeExclusive) {
+                EmailService.sendMassCollegeAlert(job);
+            }
 
             res.status(201).json({ success: true, data: job, message: 'Job added successfully' });
         } catch (error) {
