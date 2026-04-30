@@ -3,6 +3,7 @@ const router = express.Router();
 const Application = require('../models/Application');
 const Job = require('../models/Job');
 const { authRequired } = require('../middleware/auth');
+const EmailService = require('../services/emailService');
 
 /**
  * GET /api/applications
@@ -98,6 +99,9 @@ router.post('/', authRequired, async (req, res) => {
         });
 
         const populated = await application.populate('job');
+
+        // Trigger dynamic email acknowledgement in the background
+        EmailService.sendApplicationEmail(req.user, populated.job);
 
         res.status(201).json({
             success: true,

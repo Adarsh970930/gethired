@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { HiOutlineSave, HiOutlineClock, HiOutlineDatabase, HiOutlineTrash, HiOutlineSparkles } from 'react-icons/hi';
+import { HiOutlineSave, HiOutlineClock, HiOutlineDatabase, HiOutlineTrash, HiOutlineSparkles, HiOutlineMail, HiOutlinePencil, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 
 export default function AdminSettings() {
     const [settings, setSettings] = useState({
@@ -15,9 +15,21 @@ export default function AdminSettings() {
         aiProvider: 'gemini',
         geminiApiKey: '',
         groqApiKey: '',
+        emailEnabled: false,
+        smtpEmail: '',
+        smtpPassword: '',
+        emailSubject: '',
+        emailTemplate: '',
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    
+    // Security fields states
+    const [editMode, setEditMode] = useState({ gemini: false, groq: false, smtp: false });
+    const [showPass, setShowPass] = useState({ gemini: false, groq: false, smtp: false });
+    
+    const toggleEdit = (field) => setEditMode(prev => ({ ...prev, [field]: !prev[field] }));
+    const toggleShow = (field) => setShowPass(prev => ({ ...prev, [field]: !prev[field] }));
 
     useEffect(() => {
         loadSettings();
@@ -43,6 +55,8 @@ export default function AdminSettings() {
         try {
             await axios.put('/api/admin/settings', settings);
             toast.success('Platform settings updated successfully');
+            // Auto-lock sensitive fields after saving
+            setEditMode({ gemini: false, groq: false, smtp: false });
         } catch (err) {
             toast.error('Failed to update settings');
         } finally {
@@ -105,22 +119,44 @@ export default function AdminSettings() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
                             <div className={settings.aiProvider === 'gemini' ? 'opacity-100' : 'opacity-40 grayscale transition-all'}>
                                 <label className="block text-sm font-semibold text-secondary mb-2">Google Gemini API Key</label>
-                                <input 
-                                    type="password" name="geminiApiKey" 
-                                    placeholder="AIzaSy..."
-                                    value={settings.geminiApiKey} onChange={handleChange}
-                                    className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
-                                />
+                                <div className="relative flex items-center">
+                                    <input 
+                                        type={showPass.gemini ? "text" : "password"} name="geminiApiKey" 
+                                        placeholder="AIzaSy..."
+                                        value={settings.geminiApiKey || ''} onChange={handleChange}
+                                        readOnly={!editMode.gemini}
+                                        className={`form-input w-full rounded-lg p-3 pr-20 text-primary transition-all border ${editMode.gemini ? 'bg-bg-input border-accent focus:ring-1 focus:ring-accent' : 'bg-bg-secondary border-border opacity-70 cursor-not-allowed focus:outline-none'}`}
+                                    />
+                                    <div className="absolute right-3 flex items-center gap-2">
+                                        <button type="button" onClick={() => toggleShow('gemini')} className="text-secondary hover:text-primary transition-colors">
+                                            {showPass.gemini ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
+                                        </button>
+                                        <button type="button" onClick={() => toggleEdit('gemini')} className={`transition-colors ${editMode.gemini ? 'text-accent' : 'text-secondary hover:text-primary'}`}>
+                                            <HiOutlinePencil size={18} />
+                                        </button>
+                                    </div>
+                                </div>
                                 <p className="text-[0.65rem] text-muted mt-1 uppercase tracking-wider">Required for Gemini 1.5 Flash</p>
                             </div>
                             <div className={settings.aiProvider === 'groq' ? 'opacity-100' : 'opacity-40 grayscale transition-all'}>
                                 <label className="block text-sm font-semibold text-secondary mb-2">Groq LLaMA-3 API Key</label>
-                                <input 
-                                    type="password" name="groqApiKey" 
-                                    placeholder="gsk_..."
-                                    value={settings.groqApiKey} onChange={handleChange}
-                                    className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-[#f55036]" 
-                                />
+                                <div className="relative flex items-center">
+                                    <input 
+                                        type={showPass.groq ? "text" : "password"} name="groqApiKey" 
+                                        placeholder="gsk_..."
+                                        value={settings.groqApiKey || ''} onChange={handleChange}
+                                        readOnly={!editMode.groq}
+                                        className={`form-input w-full rounded-lg p-3 pr-20 text-primary transition-all border ${editMode.groq ? 'bg-bg-input border-[#f55036] focus:ring-1 focus:ring-[#f55036]' : 'bg-bg-secondary border-border opacity-70 cursor-not-allowed focus:outline-none'}`}
+                                    />
+                                    <div className="absolute right-3 flex items-center gap-2">
+                                        <button type="button" onClick={() => toggleShow('groq')} className="text-secondary hover:text-primary transition-colors">
+                                            {showPass.groq ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
+                                        </button>
+                                        <button type="button" onClick={() => toggleEdit('groq')} className={`transition-colors ${editMode.groq ? 'text-[#f55036]' : 'text-secondary hover:text-primary'}`}>
+                                            <HiOutlinePencil size={18} />
+                                        </button>
+                                    </div>
+                                </div>
                                 <p className="text-[0.65rem] text-muted mt-1 uppercase tracking-wider">Required for Ultra-fast Inferencing</p>
                             </div>
                         </div>
@@ -186,6 +222,87 @@ export default function AdminSettings() {
                                 value={settings.cleanupAfterDays} onChange={handleChange}
                                 className="form-input w-full md:w-1/2 bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
                             />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Automated Email Acknowledgements */}
+                <div className="admin-card p-6">
+                    <div className="flex items-center gap-3 mb-6 border-b border-border pb-4">
+                        <HiOutlineMail className="text-accent" size={24} />
+                        <h2 className="text-xl font-bold text-heading">Automated Email Communications</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between bg-bg-secondary p-4 rounded-lg border border-border">
+                            <div>
+                                <h3 className="font-bold text-heading text-sm">Application Acknowledgement Emails</h3>
+                                <p className="text-xs text-muted mt-1">Automatically send an email to users when they apply for a job.</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="emailEnabled" checked={settings.emailEnabled} onChange={handleChange} className="sr-only peer" />
+                                <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success"></div>
+                            </label>
+                        </div>
+                        
+                        <div className={settings.emailEnabled ? 'space-y-6 opacity-100 transition-opacity' : 'space-y-6 opacity-40 pointer-events-none transition-opacity'}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-secondary mb-2">SMTP / Sender Email (Gmail)</label>
+                                    <input 
+                                        type="email" name="smtpEmail" 
+                                        placeholder="admin@gethired.com"
+                                        required={settings.emailEnabled}
+                                        value={settings.smtpEmail} onChange={handleChange}
+                                        className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-secondary mb-2">App Password (Not regular password)</label>
+                                    <div className="relative flex items-center">
+                                        <input 
+                                            type={showPass.smtp ? "text" : "password"} name="smtpPassword" 
+                                            placeholder="abcd efgh ijkl mnop"
+                                            required={settings.emailEnabled && editMode.smtp}
+                                            value={settings.smtpPassword || ''} onChange={handleChange}
+                                            readOnly={!editMode.smtp}
+                                            className={`form-input w-full rounded-lg p-3 pr-20 text-primary transition-all border ${editMode.smtp ? 'bg-bg-input border-accent focus:ring-1 focus:ring-accent' : 'bg-bg-secondary border-border opacity-70 cursor-not-allowed focus:outline-none'}`}
+                                        />
+                                        <div className="absolute right-3 flex items-center gap-2">
+                                            <button type="button" onClick={() => toggleShow('smtp')} className="text-secondary hover:text-primary transition-colors">
+                                                {showPass.smtp ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
+                                            </button>
+                                            <button type="button" onClick={() => toggleEdit('smtp')} className={`transition-colors ${editMode.smtp ? 'text-accent' : 'text-secondary hover:text-primary'}`}>
+                                                <HiOutlinePencil size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p className="text-[0.65rem] text-muted mt-1">Generate an "App Password" from your Google Account settings.</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-semibold text-secondary mb-2">Email Subject line</label>
+                                <input 
+                                    type="text" name="emailSubject" 
+                                    placeholder="Application Received: {{jobTitle}}"
+                                    required={settings.emailEnabled}
+                                    value={settings.emailSubject} onChange={handleChange}
+                                    className="form-input w-full bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-secondary mb-2">Email HTML Template</label>
+                                <p className="text-xs text-muted mb-2">Use tags: <code className="bg-bg-secondary px-1 rounded">{"{{userName}}"}</code>, <code className="bg-bg-secondary px-1 rounded">{"{{jobTitle}}"}</code>, <code className="bg-bg-secondary px-1 rounded">{"{{companyName}}"}</code></p>
+                                <textarea 
+                                    name="emailTemplate" rows="6"
+                                    required={settings.emailEnabled}
+                                    value={settings.emailTemplate} onChange={handleChange}
+                                    placeholder="<p>Hi {{userName}}...</p>"
+                                    className="form-input w-full font-mono text-sm bg-bg-input border border-border rounded-lg p-3 text-primary focus:border-accent" 
+                                ></textarea>
+                            </div>
                         </div>
                     </div>
                 </div>

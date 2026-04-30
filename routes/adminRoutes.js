@@ -491,7 +491,8 @@ module.exports = function createAdminRoutes(aggregator, scheduler) {
             // Check if interval changed
             const oldInterval = settings.syncIntervalHours;
             
-            Object.assign(settings, updates);
+            // Use Mongoose .set() to ensure all fields (including new ones like aiProvider) are properly tracked and saved
+            settings.set(updates);
             await settings.save();
 
             // Notify scheduler if it exists and interval changed
