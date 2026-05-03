@@ -126,3 +126,5 @@ class ArbeitnowScraper extends BaseScraper {
 }
 
 module.exports = ArbeitnowScraper;
+
+
